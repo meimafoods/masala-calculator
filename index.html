@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meima Foods — Masala Batch Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF3E6;
+    --paper:#FFFCF6;
+    --ink:#2A1B12;
+    --ink-soft:#6B5847;
+    --chilli:#A93226;
+    --chilli-dark:#7E2419;
+    --turmeric:#C98A2B;
+    --curry:#4C6B4F;
+    --line:#E4D5BE;
+    --line-strong:#D3BE9C;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    margin:0;
+    color:var(--ink);
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:32px 20px 80px;}
+
+  /* Header */
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    padding-bottom:20px;
+    border-bottom:2px solid var(--ink);
+    margin-bottom:28px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  header .brand{font-size:26px;letter-spacing:0.2px;}
+  header .brand span{color:var(--chilli);}
+  header .tagline{font-size:13px;color:var(--ink-soft);font-style:italic;}
+
+  /* Settings row */
+  .settings-row{
+    display:flex;justify-content:flex-end;margin-bottom:18px;
+  }
+  .settings-btn{
+    background:none;border:none;color:var(--ink-soft);
+    font-size:12px;text-decoration:underline;cursor:pointer;font-family:'Inter',sans-serif;
+  }
+  .settings-panel{
+    background:var(--paper);border:1px solid var(--line-strong);border-radius:var(--radius);
+    padding:14px 16px;margin-bottom:18px;display:none;
+  }
+  .settings-panel.open{display:block;}
+  .settings-panel label{font-size:12px;color:var(--ink-soft);display:block;margin-bottom:4px;}
+  .settings-panel input{width:100%;padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;}
+  .settings-panel .row{display:flex;gap:8px;margin-top:8px;}
+
+  .banner{
+    background:#FBEAE6;border:1px solid var(--chilli);color:var(--chilli-dark);
+    padding:12px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:20px;
+  }
+  .banner a{color:var(--chilli-dark);}
+
+  /* Steps */
+  .step{
+    display:flex;gap:14px;margin-bottom:26px;
+  }
+  .step-num{
+    flex:0 0 30px;height:30px;border-radius:50%;
+    background:var(--ink);color:var(--cream);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-size:14px;font-weight:600;
+    margin-top:2px;
+  }
+  .step-body{flex:1;min-width:0;}
+  .step-title{font-size:18px;margin-bottom:10px;}
+  .step-sub{font-size:12.5px;color:var(--ink-soft);margin:-6px 0 12px;}
+
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    padding:16px;
+  }
+
+  label.field-label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:5px;font-weight:600;}
+  select, input[type=text], input[type=number]{
+    width:100%;padding:10px 11px;border:1px solid var(--line-strong);border-radius:7px;
+    font-family:'Inter',sans-serif;font-size:14.5px;background:#fff;color:var(--ink);
+  }
+  select:focus, input:focus{outline:2px solid var(--turmeric);outline-offset:1px;}
+
+  .two-col{display:flex;gap:12px;}
+  .two-col > div{flex:1;}
+
+  .add-row{display:flex;gap:8px;align-items:flex-end;margin-top:14px;}
+  .add-row .grams-input{flex:0 0 90px;}
+  .add-row .ing-select{flex:1;}
+
+  button{
+    font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;border-radius:7px;
+    border:none;padding:10px 16px;font-size:14px;
+  }
+  .btn-primary{background:var(--chilli);color:#fff;}
+  .btn-primary:hover{background:var(--chilli-dark);}
+  .btn-secondary{background:var(--ink);color:var(--cream);}
+  .btn-secondary:hover{background:#1b110b;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line-strong);}
+  .btn-ghost:hover{border-color:var(--ink-soft);color:var(--ink);}
+  button:disabled{opacity:0.45;cursor:not-allowed;}
+
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px;}
+  th{
+    text-align:left;font-size:11px;text-transform:none;color:var(--ink-soft);
+    border-bottom:1px solid var(--line-strong);padding:6px 8px;font-weight:600;
+  }
+  td{padding:8px;border-bottom:1px solid var(--line);}
+  td.num, th.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .remove-btn{background:none;border:none;color:var(--chilli);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;}
+
+  .total-line{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-top:12px;padding-top:10px;border-top:1px dashed var(--line-strong);
+    font-size:14px;
+  }
+  .total-line strong{font-family:'Fraunces',serif;font-size:16px;}
+  .total-line .ok{color:var(--curry);}
+  .total-line .warn{color:var(--chilli);}
+
+  .empty-row{color:var(--ink-soft);font-size:13px;padding:14px 0;text-align:center;}
+
+  .actions{display:flex;gap:10px;margin:22px 0 0;flex-wrap:wrap;}
+
+  /* Results */
+  #results{display:none;}
+  .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+  .result-box{background:var(--cream);border:1px solid var(--line-strong);border-radius:8px;padding:12px 14px;}
+  .result-box .label{font-size:11px;color:var(--ink-soft);text-transform:none;margin-bottom:4px;}
+  .result-box .value{font-family:'Fraunces',serif;font-size:22px;}
+  .result-box .value small{font-family:'Inter',sans-serif;font-size:12px;color:var(--ink-soft);font-weight:400;}
+
+  .brand-note{font-size:12px;color:var(--ink-soft);margin-top:10px;}
+  .diff-up{color:var(--chilli);}
+  .diff-down{color:var(--curry);}
+
+  .versions-list{margin-top:8px;}
+  .version-item{
+    display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);
+    font-size:13px;
+  }
+  .version-item .v-date{color:var(--ink-soft);}
+
+  footer{text-align:center;font-size:12px;color:var(--ink-soft);margin-top:40px;}
+
+  @media (max-width:480px){
+    .result-grid{grid-template-columns:1fr;}
+    .two-col{flex-direction:column;}
+  }
+
+  /* Print / PDF export */
+  @media print{
+    body{background:#fff;}
+    header, .settings-row, .settings-panel, .actions, #versionsCard, .add-row, .step-sub, .banner{display:none !important;}
+    .add-ing-row{display:none !important;}
+    .wrap{max-width:100%;padding:0;}
+    .card{border:1px solid #999;}
+    button{display:none;}
+    .remove-btn{display:none;}
+    #results{display:block !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="brand">Meima <span>Foods</span></div>
+      <div class="tagline">Masala batch cost calculator</div>
+    </div>
+  </header>
+
+  <div class="settings-row">
+    <button class="settings-btn" id="settingsToggle">Backend settings</button>
+  </div>
+  <div class="settings-panel" id="settingsPanel">
+    <label>Apps Script Web App URL</label>
+    <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/XXXXX/exec">
+    <div class="row">
+      <button class="btn-primary" id="saveApiUrl">Save</button>
+      <button class="btn-ghost" id="testApiUrl">Test connection</button>
+    </div>
+  </div>
+
+  <div class="banner" id="setupBanner" style="display:none;">
+    Backend isn't connected yet. Open <strong>Backend settings</strong> above and paste in your Apps Script Web App URL (see README for the 5-minute setup).
+  </div>
+
+  <!-- Step 1 -->
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">What are you making?</div>
+      <div class="card">
+        <div class="two-col">
+          <div>
+            <label class="field-label">Masala</label>
+            <select id="masalaSelect">
+              <option value="">Loading…</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Batch size (grams)</label>
+            <input type="number" id="totalGramsInput" value="50" min="1" step="1">
+          </div>
+        </div>
+        <div id="customMasalaWrap" style="display:none;margin-top:10px;">
+          <label class="field-label">New masala name</label>
+          <input type="text" id="customMasalaInput" placeholder="e.g. Sambar Masala">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">Add ingredients</div>
+      <div class="step-sub">Pick each ingredient from the master list and enter how many grams went into this batch.</div>
+      <div class="card">
+        <div class="add-row add-ing-row">
+          <div class="ing-select">
+            <label class="field-label">Ingredient</label>
+            <select id="ingredientSelect"><option value="">Loading…</option></select>
+          </div>
+          <div class="grams-input">
+            <label class="field-label">Grams</label>
+            <input type="number" id="ingredientGrams" min="0" step="0.1" placeholder="0">
+          </div>
+          <button class="btn-primary" id="addIngredientBtn">Add</button>
+        </div>
+
+        <table id="ingredientTable">
+          <thead>
+            <tr><th>Ingredient</th><th class="num">Grams</th><th class="num">%</th><th></th></tr>
+          </thead>
+          <tbody id="ingredientTbody"></tbody>
+        </table>
+        <div id="emptyIngredients" class="empty-row">No ingredients added yet.</div>
+
+        <div class="total-line">
+          <span>Added so far: <strong id="gramsAdded">0</strong> g</span>
+          <span id="gramsStatus" class="ok">of <strong id="gramsTarget">50</strong> g target</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">Calculate cost</div>
+      <div class="card">
+        <div class="actions" style="margin-top:0;">
+          <button class="btn-secondary" id="calculateBtn">Calculate cost</button>
+        </div>
+
+        <div id="results">
+          <div class="result-grid">
+            <div class="result-box">
+              <div class="label">This batch (<span id="resBatchGrams"></span> g)</div>
+              <div class="value" id="resBatchCost">₹0</div>
+            </div>
+            <div class="result-box">
+              <div class="label">Raw material cost / kg</div>
+              <div class="value" id="resRawPerKg">₹0</div>
+            </div>
+            <div class="result-box">
+              <div class="label">Making + packaging / kg</div>
+              <div class="value" id="resProcessingPerKg">₹0</div>
+            </div>
+            <div class="result-box">
+              <div class="label">Total cost / kg</div>
+              <div class="value" id="resTotalPerKg" style="color:var(--chilli);">₹0</div>
+            </div>
+          </div>
+
+          <h3 style="font-size:15px;margin-top:22px;">How this compares to the market</h3>
+          <table id="brandTable">
+            <thead>
+              <tr><th>Brand</th><th class="num">Price / 50g</th><th class="num">Price / kg</th><th class="num">vs. your cost</th></tr>
+            </thead>
+            <tbody id="brandTbody"></tbody>
+          </table>
+          <div id="brandNote" class="brand-note"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-primary" id="saveVersionBtn" disabled>Save this batch</button>
+    <button class="btn-ghost" id="exportPdfBtn" disabled>Export as PDF</button>
+    <button class="btn-ghost" id="resetBtn">Start new batch</button>
+  </div>
+  <div id="saveStatus" style="font-size:12.5px;color:var(--curry);margin-top:8px;"></div>
+
+  <!-- Version history -->
+  <div class="step" id="versionsCard" style="margin-top:34px;">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title">Past batches of this masala</div>
+      <div class="card">
+        <div id="versionsList" class="versions-list">
+          <div class="empty-row">Select a masala above to see saved batches.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Meima Foods — internal batch costing tool</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- config ----------
+  var API_URL = localStorage.getItem('meima_api_url') || 'https://script.google.com/macros/s/AKfycbwZ46vAH-SrWlpFBuNV3qdbWlsDrGk-vtpTtRslYBHezM_3SEnZ967FlKAy7R7s-PTuAg/exec';
+  var data = { marketPrice: [], products: [], brandsPrice: [] };
+  var currentIngredients = []; // {name, grams, rawPricePerKg, powderCharge, packagingCharge}
+  var lastResult = null;
+
+  // ---------- element refs ----------
+  var el = {
+    settingsToggle: document.getElementById('settingsToggle'),
+    settingsPanel: document.getElementById('settingsPanel'),
+    apiUrlInput: document.getElementById('apiUrlInput'),
+    saveApiUrl: document.getElementById('saveApiUrl'),
+    testApiUrl: document.getElementById('testApiUrl'),
+    setupBanner: document.getElementById('setupBanner'),
+
+    masalaSelect: document.getElementById('masalaSelect'),
+    totalGramsInput: document.getElementById('totalGramsInput'),
+    customMasalaWrap: document.getElementById('customMasalaWrap'),
+    customMasalaInput: document.getElementById('customMasalaInput'),
+
+    ingredientSelect: document.getElementById('ingredientSelect'),
+    ingredientGrams: document.getElementById('ingredientGrams'),
+    addIngredientBtn: document.getElementById('addIngredientBtn'),
+    ingredientTbody: document.getElementById('ingredientTbody'),
+    emptyIngredients: document.getElementById('emptyIngredients'),
+    gramsAdded: document.getElementById('gramsAdded'),
+    gramsTarget: document.getElementById('gramsTarget'),
+    gramsStatus: document.getElementById('gramsStatus'),
+
+    calculateBtn: document.getElementById('calculateBtn'),
+    results: document.getElementById('results'),
+    resBatchGrams: document.getElementById('resBatchGrams'),
+    resBatchCost: document.getElementById('resBatchCost'),
+    resRawPerKg: document.getElementById('resRawPerKg'),
+    resProcessingPerKg: document.getElementById('resProcessingPerKg'),
+    resTotalPerKg: document.getElementById('resTotalPerKg'),
+    brandTbody: document.getElementById('brandTbody'),
+    brandNote: document.getElementById('brandNote'),
+
+    saveVersionBtn: document.getElementById('saveVersionBtn'),
+    exportPdfBtn: document.getElementById('exportPdfBtn'),
+    resetBtn: document.getElementById('resetBtn'),
+    saveStatus: document.getElementById('saveStatus'),
+    versionsList: document.getElementById('versionsList')
+  };
+
+  function money(n){
+    if (isNaN(n)) return '₹0';
+    return '₹' + n.toLocaleString('en-IN', {maximumFractionDigits: 2});
+  }
+
+  // ---------- settings ----------
+  el.apiUrlInput.value = API_URL;
+  el.settingsToggle.addEventListener('click', function(){
+    el.settingsPanel.classList.toggle('open');
+  });
+  el.saveApiUrl.addEventListener('click', function(){
+    API_URL = el.apiUrlInput.value.trim();
+    localStorage.setItem('meima_api_url', API_URL);
+    el.settingsPanel.classList.remove('open');
+    loadData();
+  });
+  el.testApiUrl.addEventListener('click', function(){
+    var url = el.apiUrlInput.value.trim();
+    if (!url) return;
+    fetch(url + '?action=data')
+      .then(function(r){ return r.json(); })
+      .then(function(){ alert('Connected successfully.'); })
+      .catch(function(err){ alert('Could not connect: ' + err); });
+  });
+
+  // ---------- load master data ----------
+  function loadData(){
+    if (!API_URL){
+      el.setupBanner.style.display = 'block';
+      el.masalaSelect.innerHTML = '<option value="">Set up backend first</option>';
+      el.ingredientSelect.innerHTML = '<option value="">Set up backend first</option>';
+      return;
+    }
+    el.setupBanner.style.display = 'none';
+    fetch(API_URL + '?action=data')
+      .then(function(r){ return r.json(); })
+      .then(function(json){
+        data = json;
+        populateMasalaOptions();
+        populateIngredientOptions();
+      })
+      .catch(function(){
+        el.setupBanner.style.display = 'block';
+        el.setupBanner.innerHTML = 'Could not reach the backend. Check the Apps Script URL in <strong>Backend settings</strong> and that it is deployed for "Anyone" access.';
+      });
+  }
+
+  function populateMasalaOptions(){
+    var options = '<option value="">— Select —</option>';
+    (data.products || []).forEach(function(p){
+      var name = p.PRODUCTS;
+      if (name) options += '<option value="' + esc(name) + '">' + esc(name) + '</option>';
+    });
+    options += '<option value="__custom__">+ New masala…</option>';
+    el.masalaSelect.innerHTML = options;
+  }
+
+  function populateIngredientOptions(){
+    var options = '<option value="">— Select ingredient —</option>';
+    (data.marketPrice || []).forEach(function(m){
+      var name = m.INGREDIENTS;
+      if (name) options += '<option value="' + esc(name) + '">' + esc(name) + '</option>';
+    });
+    el.ingredientSelect.innerHTML = options;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ---------- masala selection ----------
+  el.masalaSelect.addEventListener('change', function(){
+    el.customMasalaWrap.style.display = (el.masalaSelect.value === '__custom__') ? 'block' : 'none';
+    loadVersions();
+  });
+
+  function getMasalaName(){
+    if (el.masalaSelect.value === '__custom__') return el.customMasalaInput.value.trim();
+    return el.masalaSelect.value;
+  }
+
+  el.totalGramsInput.addEventListener('input', function(){
+    el.gramsTarget.textContent = el.totalGramsInput.value || 0;
+    updateGramsTotal();
+  });
+
+  // ---------- ingredients ----------
+  el.addIngredientBtn.addEventListener('click', function(){
+    var name = el.ingredientSelect.value;
+    var grams = parseFloat(el.ingredientGrams.value);
+    if (!name){ alert('Choose an ingredient.'); return; }
+    if (!grams || grams <= 0){ alert('Enter grams used.'); return; }
+
+    var master = (data.marketPrice || []).find(function(m){ return m.INGREDIENTS === name; });
+    if (!master){ alert('Ingredient not found in master list.'); return; }
+
+    var existing = currentIngredients.find(function(i){ return i.name === name; });
+    if (existing){
+      existing.grams += grams;
+    } else {
+      currentIngredients.push({
+        name: name,
+        grams: grams,
+        rawPricePerKg: Number(master['Raw PRICE per KG']) || 0,
+        powderCharge: Number(master['POWDER MAKING Charges Per KG']) || 0,
+        packagingCharge: Number(master['PACKAGEING Charges Per KG']) || 0
+      });
+    }
+    el.ingredientGrams.value = '';
+    el.ingredientSelect.value = '';
+    renderIngredients();
+    hideResults();
+  });
+
+  function renderIngredients(){
+    var totalAdded = currentIngredients.reduce(function(s,i){ return s + i.grams; }, 0);
+    el.emptyIngredients.style.display = currentIngredients.length ? 'none' : 'block';
+    el.ingredientTbody.innerHTML = currentIngredients.map(function(ing, idx){
+      var pct = totalAdded ? (ing.grams / totalAdded * 100) : 0;
+      return '<tr>' +
+        '<td>' + esc(ing.name) + '</td>' +
+        '<td class="num">' + ing.grams + '</td>' +
+        '<td class="num">' + pct.toFixed(1) + '%</td>' +
+        '<td><button class="remove-btn" data-idx="' + idx + '" title="Remove">✕</button></td>' +
+        '</tr>';
+    }).join('');
+
+    Array.prototype.forEach.call(el.ingredientTbody.querySelectorAll('.remove-btn'), function(btn){
+      btn.addEventListener('click', function(){
+        currentIngredients.splice(Number(btn.getAttribute('data-idx')), 1);
+        renderIngredients();
+        hideResults();
+      });
+    });
+    updateGramsTotal();
+  }
+
+  function updateGramsTotal(){
+    var totalAdded = currentIngredients.reduce(function(s,i){ return s + i.grams; }, 0);
+    var target = parseFloat(el.totalGramsInput.value) || 0;
+    el.gramsAdded.textContent = round2(totalAdded);
+    el.gramsTarget.textContent = target;
+    if (Math.abs(totalAdded - target) < 0.01){
+      el.gramsStatus.className = 'ok';
+    } else {
+      el.gramsStatus.className = 'warn';
+    }
+  }
+
+  function round2(n){ return Math.round(n * 100) / 100; }
+
+  // ---------- calculate ----------
+  el.calculateBtn.addEventListener('click', function(){
+    var masalaName = getMasalaName();
+    var totalGrams = parseFloat(el.totalGramsInput.value);
+
+    if (!masalaName){ alert('Select or name the masala you are making.'); return; }
+    if (!totalGrams || totalGrams <= 0){ alert('Enter a valid batch size in grams.'); return; }
+    if (!currentIngredients.length){ alert('Add at least one ingredient.'); return; }
+
+    var rawCostForBatch = currentIngredients.reduce(function(s,i){
+      return s + (i.grams * i.rawPricePerKg / 1000);
+    }, 0);
+    var rawCostPerKg = rawCostForBatch * (1000 / totalGrams);
+
+    var avgPowder = average(currentIngredients.map(function(i){ return i.powderCharge; }));
+    var avgPackaging = average(currentIngredients.map(function(i){ return i.packagingCharge; }));
+    var processingPerKg = avgPowder + avgPackaging;
+
+    var totalCostPerKg = rawCostPerKg + processingPerKg;
+    var totalCostForBatch = totalCostPerKg * (totalGrams / 1000);
+
+    lastResult = {
+      masalaName: masalaName,
+      totalGrams: totalGrams,
+      ingredients: currentIngredients.slice(),
+      rawCostPerKg: round2(rawCostPerKg),
+      processingChargePerKg: round2(processingPerKg),
+      totalCostPerKg: round2(totalCostPerKg),
+      totalCostForBatch: round2(totalCostForBatch)
+    };
+
+    el.resBatchGrams.textContent = totalGrams;
+    el.resBatchCost.innerHTML = money(totalCostForBatch);
+    el.resRawPerKg.innerHTML = money(rawCostPerKg);
+    el.resProcessingPerKg.innerHTML = money(processingPerKg);
+    el.resTotalPerKg.innerHTML = money(totalCostPerKg);
+
+    renderBrandComparison(masalaName, totalCostPerKg);
+
+    el.results.style.display = 'block';
+    el.saveVersionBtn.disabled = false;
+    el.exportPdfBtn.disabled = false;
+    el.results.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+
+  function average(arr){
+    var vals = arr.filter(function(v){ return !isNaN(v); });
+    if (!vals.length) return 0;
+    return vals.reduce(function(a,b){return a+b;},0) / vals.length;
+  }
+
+  function renderBrandComparison(masalaName, yourCostPerKg){
+    var rows = (data.brandsPrice || []).filter(function(b){
+      return String(b.Product).toLowerCase().indexOf(masalaName.toLowerCase()) !== -1 ||
+             masalaName.toLowerCase().indexOf(String(b.Product).toLowerCase()) !== -1;
+    });
+
+    if (!rows.length){
+      el.brandTbody.innerHTML = '';
+      el.brandNote.textContent = 'No matching brand prices found for "' + masalaName + '" in Brands_Price — add a row there to see a comparison.';
+      return;
+    }
+    el.brandNote.textContent = '';
+    el.brandTbody.innerHTML = rows.map(function(b){
+      var brandKg = Number(b['Price of 1KG']) || 0;
+      var diff = brandKg ? ((yourCostPerKg - brandKg) / brandKg * 100) : 0;
+      var diffLabel = brandKg ? (diff >= 0 ? '+' + diff.toFixed(0) + '%' : diff.toFixed(0) + '%') : '—';
+      var diffClass = diff >= 0 ? 'diff-up' : 'diff-down';
+      return '<tr>' +
+        '<td>' + esc(b.Brand) + '</td>' +
+        '<td class="num">' + money(Number(b['Price of 50Gram'])) + '</td>' +
+        '<td class="num">' + money(brandKg) + '</td>' +
+        '<td class="num ' + diffClass + '">' + diffLabel + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function hideResults(){
+    el.results.style.display = 'none';
+    el.saveVersionBtn.disabled = true;
+    el.exportPdfBtn.disabled = true;
+    lastResult = null;
+  }
+
+  // ---------- save version ----------
+  el.saveVersionBtn.addEventListener('click', function(){
+    if (!lastResult || !API_URL) return;
+    el.saveVersionBtn.disabled = true;
+    el.saveStatus.textContent = 'Saving…';
+    fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(lastResult)
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        el.saveStatus.textContent = res.success ? 'Saved ✓' : 'Could not save.';
+        el.saveVersionBtn.disabled = false;
+        loadVersions();
+      })
+      .catch(function(){
+        el.saveStatus.textContent = 'Could not reach backend — try again.';
+        el.saveVersionBtn.disabled = false;
+      });
+  });
+
+  // ---------- export pdf ----------
+  el.exportPdfBtn.addEventListener('click', function(){
+    window.print();
+  });
+
+  // ---------- reset ----------
+  el.resetBtn.addEventListener('click', function(){
+    if (!confirm('Start a new batch? Unsaved changes will be lost.')) return;
+    currentIngredients = [];
+    el.masalaSelect.value = '';
+    el.customMasalaWrap.style.display = 'none';
+    el.customMasalaInput.value = '';
+    el.totalGramsInput.value = 50;
+    renderIngredients();
+    hideResults();
+    el.saveStatus.textContent = '';
+  });
+
+  // ---------- version history ----------
+  function loadVersions(){
+    var masalaName = getMasalaName();
+    if (!masalaName || !API_URL){
+      el.versionsList.innerHTML = '<div class="empty-row">Select a masala above to see saved batches.</div>';
+      return;
+    }
+    fetch(API_URL + '?action=versions&masala=' + encodeURIComponent(masalaName))
+      .then(function(r){ return r.json(); })
+      .then(function(json){
+        var versions = json.versions || [];
+        if (!versions.length){
+          el.versionsList.innerHTML = '<div class="empty-row">No saved batches yet for ' + esc(masalaName) + '.</div>';
+          return;
+        }
+        el.versionsList.innerHTML = versions.slice(0, 10).map(function(v){
+          var date = v.Timestamp ? new Date(v.Timestamp).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) : '';
+          return '<div class="version-item">' +
+            '<span>' + esc(v.TotalGrams) + 'g batch — ' + money(Number(v.TotalCostPerKg)) + '/kg</span>' +
+            '<span class="v-date">' + date + '</span>' +
+            '</div>';
+        }).join('');
+      })
+      .catch(function(){
+        el.versionsList.innerHTML = '<div class="empty-row">Could not load saved batches.</div>';
+      });
+  }
+
+  el.customMasalaInput.addEventListener('blur', loadVersions);
+
+  // ---------- init ----------
+  renderIngredients();
+  loadData();
+})();
+</script>
+</body>
+</html>
