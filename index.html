@@ -531,10 +531,21 @@
   function field(row, aliases){
     if (!row) return undefined;
     var keys = Object.keys(row);
+    // pass 1: exact match once normalized (case/space/punctuation-insensitive)
     for (var a = 0; a < aliases.length; a++){
       var target = normKey(aliases[a]);
       for (var k = 0; k < keys.length; k++){
         if (normKey(keys[k]) === target) return row[keys[k]];
+      }
+    }
+    // pass 2: fallback if the real header has extra words tacked on
+    // (e.g. sheet says "Price of 50Grams pocket" instead of "Price of 50Gram")
+    for (var a2 = 0; a2 < aliases.length; a2++){
+      var target2 = normKey(aliases[a2]);
+      if (target2.length < 5) continue; // avoid short/ambiguous aliases matching too broadly
+      for (var k2 = 0; k2 < keys.length; k2++){
+        var nk = normKey(keys[k2]);
+        if (nk.indexOf(target2) !== -1 || target2.indexOf(nk) !== -1) return row[keys[k2]];
       }
     }
     return undefined;
@@ -691,7 +702,7 @@
       var diffClass = diff >= 0 ? 'diff-up' : 'diff-down';
       return '<tr>' +
         '<td>' + esc(field(b, ['Brand'])) + '</td>' +
-        '<td class="num">' + money(Number(field(b, ['Price of 50Gram', 'Price of 50 Gram']))) + '</td>' +
+        '<td class="num">' + money(Number(field(b, ['Price of 50Grams pocket', 'Price of 50Gram', 'Price of 50 Gram', 'Price of 50g']))) + '</td>' +
         '<td class="num">' + money(brandKg) + '</td>' +
         '<td class="num ' + diffClass + '">' + diffLabel + '</td>' +
         '</tr>';
@@ -788,7 +799,7 @@
         var diff = brandKg ? ((r.totalCostPerKg - brandKg) / brandKg * 100) : 0;
         var diffLabel = brandKg ? (diff >= 0 ? '+' + diff.toFixed(0) + '%' : diff.toFixed(0) + '%') : '—';
         return '<tr><td>' + esc(field(b, ['Brand'])) + '</td>' +
-          '<td class="num">' + money(Number(field(b, ['Price of 50Gram', 'Price of 50 Gram']))) + '</td>' +
+          '<td class="num">' + money(Number(field(b, ['Price of 50Grams pocket', 'Price of 50Gram', 'Price of 50 Gram', 'Price of 50g']))) + '</td>' +
           '<td class="num">' + money(brandKg) + '</td>' +
           '<td class="num">' + diffLabel + '</td></tr>';
       }).join('');
