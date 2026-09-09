@@ -502,7 +502,7 @@
   function populateMasalaOptions(){
     var options = '<option value="">— Select —</option>';
     (data.products || []).forEach(function(p){
-      var name = p.PRODUCTS;
+      var name = field(p, ['PRODUCTS', 'Product']);
       if (name) options += '<option value="' + esc(name) + '">' + esc(name) + '</option>';
     });
     options += '<option value="__custom__">+ New masala…</option>';
@@ -512,7 +512,7 @@
   function populateIngredientOptions(){
     var options = '<option value="">— Select ingredient —</option>';
     (data.marketPrice || []).forEach(function(m){
-      var name = m.INGREDIENTS;
+      var name = field(m, ['INGREDIENTS', 'Ingredient']);
       if (name) options += '<option value="' + esc(name) + '">' + esc(name) + '</option>';
     });
     el.ingredientSelect.innerHTML = options;
@@ -520,6 +520,24 @@
 
   function esc(s){
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Reads a value from a sheet-row object by trying several possible header
+  // spellings, ignoring case/spacing/punctuation differences (e.g. a stray
+  // space or different capitalization in a Google Sheet column header).
+  function normKey(s){
+    return String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+  function field(row, aliases){
+    if (!row) return undefined;
+    var keys = Object.keys(row);
+    for (var a = 0; a < aliases.length; a++){
+      var target = normKey(aliases[a]);
+      for (var k = 0; k < keys.length; k++){
+        if (normKey(keys[k]) === target) return row[keys[k]];
+      }
+    }
+    return undefined;
   }
 
   // ---------- masala selection ----------
@@ -545,7 +563,7 @@
     if (!name){ alert('Choose an ingredient.'); return; }
     if (!grams || grams <= 0){ alert('Enter grams used.'); return; }
 
-    var master = (data.marketPrice || []).find(function(m){ return m.INGREDIENTS === name; });
+    var master = (data.marketPrice || []).find(function(m){ return field(m, ['INGREDIENTS', 'Ingredient']) === name; });
     if (!master){ alert('Ingredient not found in master list.'); return; }
 
     var existing = currentIngredients.find(function(i){ return i.name === name; });
@@ -555,9 +573,9 @@
       currentIngredients.push({
         name: name,
         grams: grams,
-        rawPricePerKg: Number(master['Raw PRICE per KG']) || 0,
-        powderCharge: Number(master['POWDER MAKING Charges Per KG']) || 0,
-        packagingCharge: Number(master['PACKAGEING Charges Per KG']) || 0
+        rawPricePerKg: Number(field(master, ['Raw PRICE per KG', 'Raw Price per KG'])) || 0,
+        powderCharge: Number(field(master, ['POWDER MAKING Charges Per KG', 'Powder Making Charges Per KG'])) || 0,
+        packagingCharge: Number(field(master, ['PACKAGEING Charges Per KG', 'PACKAGING Charges Per KG'])) || 0
       });
     }
     el.ingredientGrams.value = '';
@@ -652,7 +670,7 @@
 
   function matchingBrandRows(masalaName){
     return (data.brandsPrice || []).filter(function(b){
-      var product = String(b.Product || '').toLowerCase();
+      var product = String(field(b, ['Product']) || '').toLowerCase();
       var name = masalaName.toLowerCase();
       return product.indexOf(name) !== -1 || name.indexOf(product) !== -1;
     });
@@ -667,13 +685,13 @@
     }
     el.brandNote.textContent = '';
     el.brandTbody.innerHTML = rows.map(function(b){
-      var brandKg = Number(b['Price of 1KG']) || 0;
+      var brandKg = Number(field(b, ['Price of 1KG', 'Price of 1 KG'])) || 0;
       var diff = brandKg ? ((yourCostPerKg - brandKg) / brandKg * 100) : 0;
       var diffLabel = brandKg ? (diff >= 0 ? '+' + diff.toFixed(0) + '%' : diff.toFixed(0) + '%') : '—';
       var diffClass = diff >= 0 ? 'diff-up' : 'diff-down';
       return '<tr>' +
-        '<td>' + esc(b.Brand) + '</td>' +
-        '<td class="num">' + money(Number(b['Price of 50Gram'])) + '</td>' +
+        '<td>' + esc(field(b, ['Brand'])) + '</td>' +
+        '<td class="num">' + money(Number(field(b, ['Price of 50Gram', 'Price of 50 Gram']))) + '</td>' +
         '<td class="num">' + money(brandKg) + '</td>' +
         '<td class="num ' + diffClass + '">' + diffLabel + '</td>' +
         '</tr>';
@@ -766,11 +784,11 @@
     } else {
       brandNote.style.display = 'none';
       brandBody.innerHTML = rows.map(function(b){
-        var brandKg = Number(b['Price of 1KG']) || 0;
+        var brandKg = Number(field(b, ['Price of 1KG', 'Price of 1 KG'])) || 0;
         var diff = brandKg ? ((r.totalCostPerKg - brandKg) / brandKg * 100) : 0;
         var diffLabel = brandKg ? (diff >= 0 ? '+' + diff.toFixed(0) + '%' : diff.toFixed(0) + '%') : '—';
-        return '<tr><td>' + esc(b.Brand) + '</td>' +
-          '<td class="num">' + money(Number(b['Price of 50Gram'])) + '</td>' +
+        return '<tr><td>' + esc(field(b, ['Brand'])) + '</td>' +
+          '<td class="num">' + money(Number(field(b, ['Price of 50Gram', 'Price of 50 Gram']))) + '</td>' +
           '<td class="num">' + money(brandKg) + '</td>' +
           '<td class="num">' + diffLabel + '</td></tr>';
       }).join('');
