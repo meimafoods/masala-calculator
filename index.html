@@ -53,6 +53,9 @@
   header .tagline{font-size:13.5px;color:var(--ink-soft);font-style:italic;margin-top:2px;}
   header .subtitle{font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.06em;margin-top:6px;}
 
+  .nav-link{font-size:13px;font-weight:600;color:var(--chilli);text-decoration:none;white-space:nowrap;border:1px solid var(--line-strong);padding:8px 12px;border-radius:7px;background:var(--paper);}
+  .nav-link:hover{border-color:var(--chilli);}
+
   .banner{
     background:#FBEAE6;border:1px solid var(--chilli);color:var(--chilli-dark);
     padding:12px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:20px;display:none;
@@ -152,7 +155,7 @@
   @media (max-width:480px){
     .result-grid{grid-template-columns:1fr;}
     .two-col{flex-direction:column;}
-    header{gap:12px;}
+    header{gap:12px;flex-wrap:wrap;}
     header img.logo{height:46px;}
   }
 
@@ -208,6 +211,7 @@
       <div class="tagline">The true aroma in every dish</div>
       <div class="subtitle">Masala batch cost calculator</div>
     </div>
+    <a class="nav-link" href="batches.html">Saved batches &rarr;</a>
   </header>
 
   <div class="banner" id="setupBanner">
@@ -425,7 +429,7 @@
 
   // ---------- config ----------
   // Paste your Apps Script Web App URL here before publishing (see README Part 3).
-  var API_URL = "https://script.google.com/macros/s/AKfycbwZ46vAH-SrWlpFBuNV3qdbWlsDrGk-vtpTtRslYBHezM_3SEnZ967FlKAy7R7s-PTuAg/exec";
+  var API_URL = "";
 
   var data = { marketPrice: [], products: [], brandsPrice: [] };
   var currentIngredients = []; // {name, grams, rawPricePerKg, powderCharge, packagingCharge}
@@ -545,7 +549,7 @@
       if (target2.length < 5) continue; // avoid short/ambiguous aliases matching too broadly
       for (var k2 = 0; k2 < keys.length; k2++){
         var nk = normKey(keys[k2]);
-        if (nk.indexOf(target2) !== -1 || target2.indexOf(nk) !== -1) return row[keys[k2]];
+        if (nk && (nk.indexOf(target2) !== -1 || target2.indexOf(nk) !== -1)) return row[keys[k2]];
       }
     }
     return undefined;
